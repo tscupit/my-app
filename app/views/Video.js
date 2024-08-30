@@ -6,6 +6,8 @@ import {
   Image,
   TouchableWithoutFeedback,
 } from "react-native";
+import Config from 'react-native-config';
+const apiKey = Config.YOUTUBE_API_KEY;
 
 const TubeItem = (props) => {
   const videoChoice = () => {
@@ -35,20 +37,36 @@ const TubeItem = (props) => {
 const Video = ({ navigation }) => {
   const [listLoaded, setListLoaded] = useState(false);
   const [videoList, setVideoList] = useState([]);
-
+console.log(`apiKey: ${apiKey}`);
   const getVids = async () => {
     try {
-      const response = await fetch(
-        "https://www.googleapis.com/youtube/v3/search?part=snippet&q=pluralsight&type=video&key=AIzaSyAv7imuLklYHkfs1mCOyYx-bUz0jMTyXLo"
-      );
-      const vids = await response.json();
-      setVideoList(Array.from(vids.items));
+        const response = await fetch(
+            `https://www.googleapis.com/youtube/v3/search?part=snippet&q=pluralsight&type=video&key=${apiKey}`
+        );
+        console.log()
+        // const response = await fetch(
+        //     "https://www.googleapis.com/youtube/v3/search?part=snippet&q=pluralsight&type=video&key=AIzaSyAv7imuLklYHkfs1mCOyYx-bUz0jMTyXLo"
+        // );
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const vids = await response.json();
+        console.log(vids); // Log the full response to check its structure
+
+        if (!vids.items || vids.items.length === 0) {
+            throw new Error('No videos found or items is undefined.');
+        }
+
+        setVideoList(Array.from(vids.items));
     } catch (error) {
-      console.error(error);
+        console.error('Error fetching videos:', error.message);
     } finally {
-      setListLoaded(true);
+        setListLoaded(true);
     }
-  };
+};
+
 
   useEffect(() => {
     getVids();
